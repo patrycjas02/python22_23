@@ -1,0 +1,426 @@
+# you will use re and numpy module,
+# TODO: import both, numpy under the name np
+
+import re
+import numpy as np
+
+
+# and there it is, our DNASeq class!
+class DNASeq:
+ 
+    #===SECTION=1========================================================
+    
+    # a dictionary with the IUPAC ambiguous DNA alphabet
+    # (https://www.bioinformatics.org/sms/iupac.html)
+    # and a gap sign, the key is paired with a value
+    # that is the key's complement, this dictionary
+    # is defined as a class variable,
+    # revise how to access values of such variables,
+    # TODO: fill up the missing letters,
+    #       make them capitals
+    
+    ALPH = {
+       'A' : 'T',   'T' : 'A',   'G' : 'C',   'C' : 'G',
+       'K' : 'M',   'M' : 'K',   'B' : 'V',   'D' : 'H',
+       'H' : 'D',   'V' : 'B',   'N' : 'N',   '-' : '-'
+    }
+    
+    # regular expression for FASTA format processing,
+    # another class variable,
+    # TODO: assign to FASTA_REGEX variable a proper
+    #       value to formulate a proper regular expression
+    
+    FASTA_REGEX = '\\>([^\\ \n]+)\\ ?(.*)\n([^\\>]+)'
+    
+    # TEST the code in the Section 1
+    
+    
+    #===SECTION=2========================================================
+    
+    # the special method __init__() initialising the
+    # initial state of a newly created object (a class instance),
+    # TODO: define the special method __init__() proper for
+    #       initialisation of a new object of DNASeq type,
+    #       which is to be created as following:
+    #       seq = DNASeq(seqid, title, seq)
+    
+    def __init__(self, seqid, title, seq):
+        
+        self.seqid = seqid
+        self.title = title
+        self.seq   = seq
+    
+        
+    # TEST the code in the Section 2
+        
+        
+    #===SECTION=3========================================================
+        
+    # now we need a class method that will help us to
+    # deserialise objects from a file in FASTA format
+    # TODO: define a class method from_file that next to
+    #       the automatically passed reference to a class
+    #       will accept an argument with a file path, and
+    #       will work as following:
+    #       seqs = DNASeq.from_file('some/path/some_file.fasta')
+    
+    @classmethod
+    def from_file(cls, filename):
+        # TODO: create an empty dictionary
+        
+        seqs = {}
+        
+        # TODO: load the content of the file to
+        #       a variable buf by using the
+        #       instruction with
+        
+        with open(filename) as f: buf = f.read()
+            
+        # TODO: start iteratively searching for FASTA_REGEX in
+        #       buf by using a for loop and the re.finditer() method
+        
+        for match in re.finditer(DNASeq.FASTA_REGEX, buf):
+            # TODO: unpack the match fragments to
+            #       seqid, title and seq
+            
+            seqid, title, seq = match.groups()
+        
+                
+            # TODO: using one of re module methods
+            #       remove from seq substrings of
+            #       white spaces, next change
+            #       all characters to capital letters
+                
+            seq = re.sub('[\ \n\t]+', '', seq)
+            
+            # TODO: obtain seq alphabet (seq_alph) by
+            #       converting seq into a set
+            
+            seq_alph = set(seq)
+            
+            # TODO: find a proper method for Python sets,
+            #       which will allow you to see if the
+            #       alphabet of seq is a subset of ALPHABET,
+            #       if not raise an exception
+            
+            if not seq_alph.issubset(DNASeq.ALPH.keys()):
+                raise Exception(f'Sequence {seqid} contains incorrect letters')
+            
+            # if we got here, everything seems fine
+            # TODO: add to seqs dictionary a new object
+            #       using the reference to the class
+            #       passed to this method,
+            #       add the new object under the key
+            #       equal to the sequence id
+            
+            
+            seqs[seqid] = cls(seqid, title, seq)
+            
+        return seqs
+        
+            
+
+    
+    # TEST the code in the Section 3
+    
+        
+    #===SECTION=4========================================================
+    
+    # the special method __repr__() returns a string representation of
+    # an object, we will define this represetation as 10 first letters
+    # of the contained sequence and three dots '...' if the sequnce
+    # is longer than 10 letters
+    
+    
+    def __repr__(self):
+        
+        beginning = self.seq[:10] +'...'
+        
+        return beginning
+    
+    # TEST the code in the Section 4
+    
+    
+    #===SECTION=5========================================================
+        
+    # TODO: define the proper special method that will return the lenght of
+    #       the sequence contained within a given DNASeq object when the reference
+    #       to that object is passed to the built-in len() function
+    
+
+    def __len__(self):
+        
+        length = len( self.seq )
+        
+        return length
+    
+    # TEST the code in the Section 5
+    
+    
+    #===SECTION=6========================================================
+    
+    # TODO: implement the special method __str__(), which returns
+    #       a string whenever a DNASeq object is being converted to one,
+    #       eg. str(obj) or print(obj),
+    #       make it return the sequence contained in an object 
+    #       of DNASeq type as FASTA format sequence string,
+    #       let the sequence be divided into 60-character lines
+    
+    def __str__(self):
+        lines = '\n'.join(
+            self.seq[i:i+60] for i in range(0, len(self.seq), 60)
+        )
+
+        title = f' {self.title}' if self.title != '' else ''
+
+        fasta = f'>{self.seqid}{title}\n{lines}'
+
+        return fasta
+    
+    # TEST the code in the Section 6
+    
+    
+    #===SECTION=7=======================================================
+    
+    # let's create a custom method and call it revcmpl(),
+    # it simply returns a new object of DNASeq type, which
+    # will contain a reverse-complement sequence to the
+    # one contained in the object the method is called from,
+    # to make both object distinguishable, create a new
+    # seqid for the sequence by adding '_revcmpl' suffix
+    # to the seqid of the original one
+    
+    def revcmpl(self):
+        # TODO:convert sequence contained in the object
+        #      to a list called seq
+        
+        seq = list(self.seq)
+        ##seq = list( seqs.values() )[8]
+        
+        # TODO: reverse the list in-place
+        
+        seq.reverse()
+        
+        # TODO: using string method join(), the class dictionary ALPH and a
+        #       list comprehension, translate the reversed sequence and
+        #       convert into a string
+        
+        seq_revcmpl = ''.join( DNASeq.ALPH[char] for char in seq)
+        
+        # TODO: create seqid variable and assign to it the object's seqid
+        #       and the suffix '_revcmpl'
+        
+        seqid = self.seqid + '_revcmpl'
+        
+        # TODO: create a new object of the DNASeq type using the new seqid,
+        #       title contained in the object as well as
+        #       reveresed and translated sequence, return the new object
+        
+        lines = '\n'.join(
+            seq_revcmpl[i:i+60] for i in range(0, len(seq_revcmpl), 60)
+        )
+        
+        title = f' {self.title}' if self.title != '' else ''
+        object1 = f'>{seqid}{title}\n{lines}'
+        
+        return object1
+    
+    # TEST the code in the Section 7
+    
+    
+    #===SECTION=8========================================================
+    
+    # beware! this is the hardest part to go through,
+    # we will implement the special method __getitem__()
+    # that allows to program what happens when an object
+    # is indexed or sliced (like a list or string),
+    # eg. obj[3] or obj[4:5]
+    #
+    # we know that indexing and slicing in Python works as follows:
+    # - indexing starts at 0 and goes up
+    # - when a slice is taken [3:4] the first index is included
+    #   the last not: eg. s = 'abcde', s[1:3] -> 'bc'
+    #                          01234
+    # - slice [3:1] will be an empty one
+    #
+    # when it comes to biological sequences, those are indexed
+    # according to GenBank notation, which is quite different:
+    # - indexing starts at 1
+    # - when a fragment is requested, both indices are inclusive:
+    #   seq = 'ATGCTACG', seq[1:3] -> 'ATG'
+    #          12345678
+    # - the start index greater than stop index indicates
+    #   a reverse complement (the complementary strand):
+    #   seq[3:1] -> 'CAT'
+    #
+    # now we will try to implement this behaviour in case of
+    # our objects of DNASeq type
+    
+    def __getitem__(self, key):
+        
+        if isinstance(key, slice):
+            # if the key is a slice object, it has three properties:
+            # start, stop and step, eg. list[start:stop:step]
+            # if any is missing its value is None, eg. list[start:end]
+            # first two will be equivalent of beginning and end
+            # in GenBank notation
+            
+            # the whole point here is to translate GenBank indices
+            # into Python ones and index or slice the sequence
+            # contained in the DNASeq object, which is surely of
+            # Python string format, so it cannot be directly indexed
+            # or sliced with GenBank indices wihtout translating them
+            
+            # to make the code nicer, let's assign values of slice
+            # properties to single variables
+            
+            start, end, step = key.start, key.stop, key.step
+            
+            # let's test a few possibilites and exclude those
+            # that cannot be translated into GenBank notation
+            
+            if step is not None:
+                # there is not an equivalent of step in GenBank notation
+                # raise a KeyError
+                
+                raise KeyError('Step is not allowed in GenBank notation')
+            
+            if start is None:
+                # start must be provided
+                
+                raise KeyError('start index is required')
+            
+            if end is None:
+                # as well as end
+                
+                raise KeyError('end index is required')
+                
+            if not np.issubdtype(type(start), np.integer) or \
+               not np.issubdtype(type(end), np.integer):
+                # start and end must be defined as integer values,
+                # otherwise raise a KeyError
+                
+                raise TypeError('Start and end must be integers')
+            
+            if start <= 0 or end <= 0:
+                # both must be greater than 0 as in GenBank notation,
+                # in which indices starts at 1
+                
+                raise KeyError('Minimal value for start and end is 1')
+                
+            # now we are sure there is only start and end in the slice,
+            # and that both are integer type values and equal or greater to 1,
+            # let's move on then
+            
+            # TODO: create a variable strand and set it to 1 if start is
+            #       less or equal to end, otherwise to -1
+                
+            strand = 1 if start <= end else -1
+            
+            # TODO: if strand is equal to -1, swap the values of start and end,
+            #       by using unpacking, so start is less than end (they are ordered)
+            
+            if strand == -1:
+                start, end = end, start
+            
+            # TODO: create a new seqid by adding to the existing one
+            #       suffix '_loc(start_end)', where start and end are
+            #       values of our variables
+            
+            seqid = self.seqid + '_loc(' + str(start) + '_' + str(end) + ')'
+        
+            
+            # TODO: decrease start by 1, if start in GenBank notation is 1,
+            #       it is and equivalent of 0 in Python indexing (etc.),
+            #       so it needs to be decreased by 1 to be translated
+            #       from GenBank to Python
+            #
+            #       you must not decrease end, as in GenBank it is inclusive,
+            #       but in Python exclusive, so it is decreased
+            #       somewhat automatically
+            
+            start -= 1
+
+            
+            # TODO: create a new object of DNASeq type, by using new seqid
+            #       you created a few lines before, title of the existing object,
+            #       a slice of the sequence contained in that object by using
+            #       the adjusted start index and the end index (string slicing)
+            
+            sub_seq = DNASeq(self.seqid, self.title, self.seq)
+            sub_seq.seqid = seqid
+            sub_seq.title = self.title
+            sub_seq.seq = self.seq[start:end]
+
+            
+            # TODO: if strand is -1, assign to the same reference ("variable")
+            #       a reverse complement of the new sequence object by using
+            #       the method revcmpl() you implemented before
+            
+            if strand == -1:
+                sub_seq = DNASeq.revcmpl(sub_seq)
+                
+            # TODO: return the new sequence object
+                
+            return sub_seq
+                
+        else:
+            
+            # if we are here, it means that key is not a slice object,
+            # then we allow it be an integer greater than 0,
+            # which is GenBank notation
+            
+            if not np.issubdtype(type(key), np.integer):
+                raise TypeError('Index must be an integer')
+                
+            if key <= 0:
+                raise KeyError('Minimal value of index is 1')
+                
+            # in case it is just one letter not a slice, we
+            # will return simply a letter from the sequence,
+            # not a new DNASeq object, we need to remember to
+            # decrease the key value by one to translate it from
+            # GenBank to Python
+            
+            
+                
+            return f'{self.seq[0]}'
+    
+    # TEST the code in the Section 8
+        
+        
+    #===SECTION=9========================================================
+    
+    # implement the special method __add__() which will be
+    # invoked when two objects of DNASeq type are being added,
+    # eg. seq_3 = seq_1 + seq_2
+    #
+    # create the result of addition as a new object of DNASeq type
+    # and set its:
+    # - seqid to seqids of added objects separated by an underscore
+    # - title to titles of added objects separated by an underscore
+    # - seq to a simple concatenation of both sequences
+    #
+    # return the new object
+    
+    def __add__(self, seq2):
+        if isinstance(seq2, DNASeq):
+            seq3 = DNASeq(self.seqid, self.title, self.seq)
+            seq3.seq = self.seq + seq2.seq
+            seq3.title = self.title + '_' + seq2.title
+            seq3.seqid = self.seqid + '_' + seq2.seqid
+            return seq3
+    
+    # TEST the code in the Section 9
+    
+    
+    #===SECTION=10========================================================
+        
+    # define a custom method copy() that will return an exact copy
+    # of the existing object
+        
+    def copy(self):
+        return DNASeq(self.seqid, self.title, self.seq)
+    
+    # TEST the code in the Section 10
+    
